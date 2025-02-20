@@ -30,17 +30,17 @@ const APP = `<div class="container">
 </div>`;
 
 class BenchApp extends HTMLElement {
-  ID = 1;
-  SEL = null;
-  TMPL = null;
-  SIZE = 0;
+  _id = 1;
+  _selected = null;
+  _tmpl = null;
+  _size = 0;
 
   constructor() {
     super();
     this.innerHTML = APP;
-    this.TABLE = this.querySelector('table');
-    this.TBODY = this.querySelector('tbody');
-    this.ROWS = this.TBODY.children;
+    this._table = this.querySelector('table');
+    this._tbody = this.querySelector('tbody');
+    this._rows = this._tbody.children;
     const container = this.firstElementChild.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
 
     container.append(new BenchButton('run', 'Create 1,000 rows', this.run.bind(this)));
@@ -50,12 +50,12 @@ class BenchApp extends HTMLElement {
     container.append(new BenchButton('clear', 'Clear', this.clear.bind(this)));
     container.append(new BenchButton('swaprows', 'Swap Rows', this.swaprows.bind(this)));
 
-    this.TBODY.addEventListener("row-select", (e) => {
+    this._tbody.addEventListener("row-select", (e) => {
       const msg = e.detail;
-      if (this.SEL) {
-        this.SEL.deselect();
+      if (this._selected) {
+        this._selected.deselect();
       }
-      this.SEL = msg.element;
+      this._selected = msg.element;
     });
   }
   run() {
@@ -68,45 +68,34 @@ class BenchApp extends HTMLElement {
     this.create(1000, true);
   }
   clear() {
-    this.TBODY.textContent = '';
-    this.SEL = null;
+    this._tbody.textContent = '';
+    this._selected = null;
   }
   update() {
-    for (let i = 0, r; r = this.ROWS[i]; i += 10) {
+    for (let i = 0, r; r = this._rows[i]; i += 10) {
       labelOf(r).nodeValue += ' !!!';
     }
   }
   swaprows() {
-    const [, r1, r2] = this.ROWS;
-    const r998 = this.ROWS[998];
+    const [, r1, r2] = this._rows;
+    const r998 = this._rows[998];
     if (r998) {
-      insert(this.TBODY, r1, r998);
-      insert(this.TBODY, r998, r2);
+      insert(this._tbody, r1, r998);
+      insert(this._tbody, r998, r2);
     }
   }
   create(count, add = false) {
-    if (this.SIZE !== count) {
-      const template = document.createElement('template');
-      this.TMPL = clone(template.content);
-      [...Array((this.SIZE = count) / 50)].forEach(() => {
-        this.TMPL.append(new BenchRow());
-      });
-    }
     if (!add) {
       this.clear();
-      this.TBODY.remove();
-    } 
-    while (count > 0) {
-      for (const r of this.TMPL.children) {
-        r.rowId = this.ID++;
-        r.rowLabel = label();
-        count--;
-      }
-      insert(this.TBODY, clone(this.TMPL), null);
     }
-    if (!add) {
-      this.TABLE.append(this.TBODY);
+    let id = this._id;
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const row = new BenchRow(id++, label());
+      fragment.appendChild(row);
     }
+    insert(this._tbody, fragment, null);
+    this._id = id;
   }
 }
 
@@ -128,33 +117,29 @@ const TROW = document.createElement('template');
 TROW.innerHTML = '<td class="col-md-1">?</td><td class="col-md-4"><a>?</a></td><td class="col-md-1"><a><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td><td class="col-md-6"></td>';
 
 class BenchRow extends HTMLTableRowElement {
-  constructor() {
+  constructor(rowId, rowLabel) {
     super();
-    if (this.innerHTML === '') {
-      this.append(clone(TROW.content));
-    }
-    this.idColumn = this.firstChild.firstChild;
-    this.label = this.firstChild.nextSibling.firstChild;
-    this.close = this.firstChild.nextSibling.nextSibling.firstChild;
-  }
-  connectedCallback() {
-    this.label.addEventListener("click", (e) => {
+    this.append(clone(TROW.content));
+
+    const idColumn = this.firstChild.firstChild;
+    idColumn.textContent = rowId;
+
+    const label = this.firstChild.nextSibling.firstChild;
+    label.textContent = rowLabel;
+
+    const close = this.firstChild.nextSibling.nextSibling.firstChild;
+    
+    label.addEventListener("click", (e) => {
       e.stopPropagation();
       this.select();
       this.dispatchEvent(new CustomEvent('row-select', 
         { bubbles: true, detail: { element: this } 
       }));
     });
-    this.close.addEventListener("click", (e) => {
+    close.addEventListener("click", (e) => {
       e.stopPropagation();
       this.remove();
     });
-  }
-  set rowId(value) {
-    this.idColumn.textContent = value;
-  }
-  set rowLabel(value) {
-    this.label.textContent = value;
   }
   select() {
     this.className = 'danger';

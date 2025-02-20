@@ -29,10 +29,6 @@ const APP = `<div class="container">
   <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true"></span>
 </div>`;
 
-const TROW_TMPL = document.createElement('template');
-TROW_TMPL.innerHTML = '<tr is="bench-row"></tr>';
-const TROW = clone(TROW_TMPL.content);
-
 class BenchApp extends HTMLElement {
   _id = 1;
   _selected = null;
@@ -93,12 +89,9 @@ class BenchApp extends HTMLElement {
       this.clear();
     }
     let id = this._id;
-    let row;
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
-      row = new BenchRow();
-      row.rowId = id++;
-      row.rowLabel = label();
+      const row = new BenchRow(id++, label());
       fragment.appendChild(row);
     }
     insert(this._tbody, fragment, null);
@@ -120,36 +113,31 @@ class BenchButton extends HTMLElement {
   }
 }
 
-const TROW_CONTENT_TMPL = document.createElement('template');
-TROW_CONTENT_TMPL.innerHTML = '<td is="bench-cell" class="col-md-1">?</td><td is="bench-cell" class="col-md-4"><a>?</a></td><td is="bench-cell" class="col-md-1"><a><span is="bench-icon" class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td><td is="bench-cell" class="col-md-6"></td>';
-const TROW_CONTENT = clone(TROW_CONTENT_TMPL.content);
-
 class BenchRow extends HTMLTableRowElement {
-  constructor() {
+  constructor(rowId, rowLabel) {
     super();
-    if (this.innerHTML === '') {
-      this.append(clone(TROW_CONTENT));
-    }
-    this.idColumn = this.firstChild;
-    this.label = this.firstChild.nextSibling.firstChild;
-    this.close = this.firstChild.nextSibling.nextSibling.firstChild;
-    this.label.addEventListener("click", (e) => {
+    
+    const label = document.createElement('a');
+    label.textContent = rowLabel;
+    const close = document.createElement('a');
+    close.append(new BenchIcon());
+    
+    this.append(new BenchCell('col-md-1', rowId));
+    this.append(new BenchCell('col-md-4', label));
+    this.append(new BenchCell('col-md-1', close));
+    this.append(new BenchCell('col-md-6'));
+
+    label.addEventListener("click", (e) => {
       e.stopPropagation();
       this.select();
       this.dispatchEvent(new CustomEvent('row-select', 
         { bubbles: true, detail: { element: this } 
       }));
     });
-    this.close.addEventListener("click", (e) => {
+    close.addEventListener("click", (e) => {
       e.stopPropagation();
       this.remove();
     });
-  }
-  set rowId(value) {
-    this.idColumn.textContent = value;
-  }
-  set rowLabel(value) {
-    this.label.textContent = value;
   }
   select() {
     this.className = 'danger';
@@ -159,9 +147,28 @@ class BenchRow extends HTMLTableRowElement {
   }
 }
 
-class BenchCell extends HTMLTableCellElement {}
+class BenchCell extends HTMLTableCellElement {
+  constructor(className, children) {
+    super();
+    this.className = className;
+    if (!children) {
+      return;
+    }
+    if (typeof children === 'string') {
+      this.textContent = children;
+    } else {
+      this.append(children);      
+    }
+  }
+}
 
-class BenchIcon extends HTMLSpanElement {}
+class BenchIcon extends HTMLSpanElement {
+  constructor() {
+    super();
+    this.className = 'glyphicon glyphicon-remove';
+    this.setAttribute('aria-hidden', 'true');
+  }
+}
 
 customElements.define('bench-button', BenchButton);
 customElements.define('bench-row', BenchRow, {extends: 'tr'});
