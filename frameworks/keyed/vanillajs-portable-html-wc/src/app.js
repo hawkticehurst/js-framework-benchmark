@@ -83,7 +83,7 @@ class BenchApp extends HTMLElement {
   }
   update() {
     for (let i = 0, r; r = this._rows[i]; i += 10) {
-      labelOf(r).nodeValue += ' !!!';
+      labelOf(r).textContent += ' !!!';
     }
   }
   swaprows() {

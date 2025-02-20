@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy'];
 const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange'];
 const nouns = ['table', 'chair', 'house', 'bbq', 'desk', 'car', 'pony', 'cookie', 'sandwich', 'burger', 'pizza', 'mouse', 'keyboard'];
@@ -35,7 +37,7 @@ BUTTONS.forEach(function (b) { b.onclick = this[b.id]; }, {
     clear,
     update () {
         for (let i = 0, r; r = ROWS[i]; i += 10)
-            labelOf(r).nodeValue += ' !!!';
+            labelOf(r).textContent += ' !!!';
     },
     swaprows () {
         const [, r1, r2] = ROWS, r998 = ROWS[998];
