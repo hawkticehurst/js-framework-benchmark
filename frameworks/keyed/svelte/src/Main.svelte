@@ -161,19 +161,12 @@
 	<table class="table table-hover table-striped test-data">
 		<tbody>
 			{#each data as row (row)}
-				<tr class={selected === row.id ? 'danger' : ''}
-					><td class="col-md-1">{row.id}</td><td class="col-md-4"
-						><a
-							onclick={() => {
-								selected = row.id;
-							}}>{row.label}</a
-						></td
-					><td class="col-md-1"
-						><a onclick={() => remove(row)}
-							><span class="glyphicon glyphicon-remove" aria-hidden="true" /></a
-						></td
-					><td class="col-md-6" /></tr
-				>
+				<tr class={selected === row.id ? 'danger' : ''}>
+					<td class="col-md-1">{row.id}</td>
+					<td class="col-md-4"><a onclick={() => {selected = row.id;}}>{row.label}</a></td>
+					<td class="col-md-1"><a onclick={() => remove(row)}><span class="glyphicon glyphicon-remove" aria-hidden="true" /></a></td>
+					<td class="col-md-6"></td>
+				</tr>
 			{/each}
 		</tbody>
 	</table>
