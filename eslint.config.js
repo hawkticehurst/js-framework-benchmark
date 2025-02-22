@@ -84,7 +84,7 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["**/node_modules/", "**/dist/", "**/results/", "css/", "**/csv_export.js", "**/py/"],
+    ignores: ["**/node_modules/", "**/dist/", "**/results/", "css/", "**/csv_export.js", "**/py/", "**/frameworks/"],
   },
   eslintConfigPrettier
 );

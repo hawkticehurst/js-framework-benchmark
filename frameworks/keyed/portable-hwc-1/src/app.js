@@ -1,10 +1,11 @@
-/* eslint-disable */
-
 const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy'];
 const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange'];
 const nouns = ['table', 'chair', 'house', 'bbq', 'desk', 'car', 'pony', 'cookie', 'sandwich', 'burger', 'pizza', 'mouse', 'keyboard'];
 
-const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
+let seed = 0;
+// random function is replaced to remove any randomness from the benchmark.
+const random = (max) => seed++ % max;
+const pick = dict => dict[random(dict.length)];
 const label = () => `${pick(adjectives)} ${pick(colours)} ${pick(nouns)}`;
 const labelOf = r => r.firstChild.nextSibling.firstChild.firstChild;
 

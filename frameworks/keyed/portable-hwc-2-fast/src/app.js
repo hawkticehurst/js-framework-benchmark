@@ -1,12 +1,14 @@
-/* eslint-disable */
-
 const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy'];
 const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange'];
 const nouns = ['table', 'chair', 'house', 'bbq', 'desk', 'car', 'pony', 'cookie', 'sandwich', 'burger', 'pizza', 'mouse', 'keyboard'];
 
-const pick = dict => dict[Math.round(Math.random() * 1000) % dict.length];
+let seed = 0;
+// random function is replaced to remove any randomness from the benchmark.
+const random = (max) => seed++ % max;
+const pick = dict => dict[random(dict.length)];
 const label = () => `${pick(adjectives)} ${pick(colours)} ${pick(nouns)}`;
 const labelOf = r => r.firstChild.nextSibling.firstChild.firstChild;
+const getButtonContainer = r => r.firstElementChild.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
 
 const {cloneNode} = Node.prototype;
 const clone = n => cloneNode.call(n, true);
@@ -16,7 +18,7 @@ const APP = `<div class="container">
   <div class="jumbotron">
     <div class="row">
       <div class="col-md-6">
-        <h1>Portable HTML Web Components (keyed) – V3</h1>
+        <h1>Portable HTML Web Components (keyed) – V2 Fast</h1>
       </div>
       <div class="col-md-6">
         <div class="row"></div>
@@ -41,8 +43,8 @@ class BenchApp extends HTMLElement {
     this._table = this.querySelector('table');
     this._tbody = this.querySelector('tbody');
     this._rows = this._tbody.children;
-    const container = this.firstElementChild.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
 
+    const container = getButtonContainer(this);
     container.append(new BenchButton('run', 'Create 1,000 rows', this.run.bind(this)));
     container.append(new BenchButton('runlots', 'Create 10,000 rows', this.runlots.bind(this)));
     container.append(new BenchButton('add', 'Append 1,000 rows', this.add.bind(this)));
@@ -73,7 +75,7 @@ class BenchApp extends HTMLElement {
   }
   update() {
     for (let i = 0, r; r = this._rows[i]; i += 10) {
-      labelOf(r).textContent += ' !!!';
+      r.appendToLabel(' !!!');
     }
   }
   swaprows() {
@@ -99,45 +101,59 @@ class BenchApp extends HTMLElement {
   }
 }
 
-const BUTTON = document.createElement('template');
-BUTTON.innerHTML = '<div class="col-sm-6 smallpad"><button type="button" class="btn btn-primary btn-block"></button></div>';
-
 class BenchButton extends HTMLElement {
   constructor(action, text, fn) {
     super();
-    const html = clone(BUTTON.content);
-    this.appendChild(html.firstChild);
-    this.firstChild.firstChild.id = action;
-    this.firstChild.firstChild.textContent = text;
-    this.addEventListener('click', fn);
+    const div = document.createElement('div');
+    div.className = 'col-sm-6 smallpad';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-primary btn-block';
+    button.id = action;
+    button.textContent = text;
+    button.addEventListener('click', fn);
+    div.appendChild(button);
+    this.appendChild(div);
   }
 }
 
 class BenchRow extends HTMLTableRowElement {
-  constructor(rowId, rowLabel) {
+  constructor(rowId, label) {
     super();
-    
-    const label = document.createElement('a');
-    label.textContent = rowLabel;
-    const close = document.createElement('a');
-    close.append(new BenchIcon());
-    
-    this.append(new BenchCell('col-md-1', rowId));
-    this.append(new BenchCell('col-md-4', label));
-    this.append(new BenchCell('col-md-1', close));
-    this.append(new BenchCell('col-md-6'));
+    const idCell = document.createElement('td');
+    idCell.className = 'col-md-1';
+    idCell.textContent = rowId;
 
-    label.addEventListener("click", (e) => {
+    const labelCell = document.createElement('td');
+    labelCell.className = 'col-md-4';
+    this.labelLink = document.createElement('a');
+    this.labelLink.textContent = label;
+    this.labelLink.addEventListener("click", (e) => {
       e.stopPropagation();
       this.select();
       this.dispatchEvent(new CustomEvent('row-select', 
         { bubbles: true, detail: { element: this } 
       }));
     });
-    close.addEventListener("click", (e) => {
+    labelCell.append(this.labelLink);
+
+    const closeCell = document.createElement('td');
+    closeCell.className = 'col-md-1';
+    const closeLink = document.createElement('a');
+    const icon = document.createElement('span');
+    icon.className = 'glyphicon glyphicon-remove';
+    icon.setAttribute('aria-hidden', 'true');
+    closeLink.append(icon);
+    closeLink.addEventListener("click", (e) => {
       e.stopPropagation();
       this.remove();
     });
+    closeCell.append(closeLink);
+    
+    const emptyCell = document.createElement('td');
+    emptyCell.className = 'col-md-6';
+
+    this.append(idCell, labelCell, closeCell, emptyCell);
   }
   select() {
     this.className = 'danger';
@@ -145,33 +161,11 @@ class BenchRow extends HTMLTableRowElement {
   deselect() {
     this.className = '';
   }
-}
-
-class BenchCell extends HTMLTableCellElement {
-  constructor(className, children) {
-    super();
-    this.className = className;
-    if (!children) {
-      return;
-    }
-    if (typeof children === 'string') {
-      this.textContent = children;
-    } else {
-      this.append(children);      
-    }
-  }
-}
-
-class BenchIcon extends HTMLSpanElement {
-  constructor() {
-    super();
-    this.className = 'glyphicon glyphicon-remove';
-    this.setAttribute('aria-hidden', 'true');
+  appendToLabel(text) {
+    this.labelLink.textContent += text;
   }
 }
 
 customElements.define('bench-button', BenchButton);
 customElements.define('bench-row', BenchRow, {extends: 'tr'});
-customElements.define('bench-cell', BenchCell, {extends: 'td'});
-customElements.define('bench-icon', BenchIcon, {extends: 'span'});
 customElements.define('bench-app', BenchApp);

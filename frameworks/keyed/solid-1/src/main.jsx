@@ -5,7 +5,9 @@ const adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", 
 const colors = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"]; // prettier-ignore
 const nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"]; // prettier-ignore
 
-const random = (max) => Math.round(Math.random() * 1000) % max;
+let seed = 0;
+// random function is replaced to remove any randomness from the benchmark.
+const random = (max) => seed++ % max;
 
 let nextId = 1;
 

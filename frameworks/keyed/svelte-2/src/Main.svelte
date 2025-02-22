@@ -93,9 +93,9 @@
 			}
 		};
 
-	function _random(max) {
-		return Math.round(Math.random() * 1000) % max;
-	}
+	let seed = 0;
+	// random function is replaced to remove any randomness from the benchmark.
+	const _random = (max) => seed++ % max;
 
 	class Item {
 		id = rowId++;
