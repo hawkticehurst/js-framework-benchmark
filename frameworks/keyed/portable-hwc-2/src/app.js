@@ -9,8 +9,6 @@ const pick = dict => dict[random(dict.length)];
 const label = () => `${pick(adjectives)} ${pick(colours)} ${pick(nouns)}`;
 const getButtonContainer = r => r.firstElementChild.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
 
-const {cloneNode} = Node.prototype;
-const clone = n => cloneNode.call(n, true);
 const insert = (parent, node, ref) => parent.insertBefore(node, ref);
 
 const APP = `<div class="container">
@@ -109,32 +107,32 @@ class BenchApp extends HTMLElement {
 }
 
 class BenchButton extends HTMLElement {
+  constructor() {
+    super();
+    this.div = document.createElement('div');
+    this.div.className = 'col-sm-6 smallpad';
+    this.button = document.createElement('button');
+    this.button.type = 'button';
+    this.button.className = 'btn btn-primary btn-block';
+    this.div.append(this.button);
+  }
   render(action, text, fn) {
-    const div = document.createElement('div');
-    div.className = 'col-sm-6 smallpad';
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'btn btn-primary btn-block';
-    button.textContent = text;
-    button.id = action;
-    button.addEventListener('click', fn);
-    
-    div.append(button);
-    this.append(div);
+    this.button.textContent = text;
+    this.button.id = action;
+    this.button.addEventListener('click', fn);
+    insert(this, this.div, null);
   }
 }
 
 class BenchRow extends HTMLTableRowElement {
-  render(rowId, label) {
-    const idCell = document.createElement('td');
-    idCell.className = 'col-md-1';
-    idCell.textContent = rowId;
+  constructor() {
+    super();
+    this.idCell = document.createElement('td');
+    this.idCell.className = 'col-md-1';
 
-    const labelCell = document.createElement('td');
-    labelCell.className = 'col-md-4';
+    this.labelCell = document.createElement('td');
+    this.labelCell.className = 'col-md-4';
     this.labelLink = document.createElement('a');
-    this.labelLink.textContent = label;
     this.labelLink.addEventListener("click", (e) => {
       e.stopPropagation();
       this.select();
@@ -142,10 +140,10 @@ class BenchRow extends HTMLTableRowElement {
         { bubbles: true, detail: { element: this } 
       }));
     });
-    labelCell.append(this.labelLink);
+    this.labelCell.append(this.labelLink);
 
-    const closeCell = document.createElement('td');
-    closeCell.className = 'col-md-1';
+    this.closeCell = document.createElement('td');
+    this.closeCell.className = 'col-md-1';
     const closeLink = document.createElement('a');
     const icon = document.createElement('span');
     icon.className = 'glyphicon glyphicon-remove';
@@ -155,12 +153,18 @@ class BenchRow extends HTMLTableRowElement {
       e.stopPropagation();
       this.remove();
     });
-    closeCell.append(closeLink);
+    this.closeCell.append(closeLink);
     
-    const emptyCell = document.createElement('td');
-    emptyCell.className = 'col-md-6';
-
-    this.append(idCell, labelCell, closeCell, emptyCell);
+    this.emptyCell = document.createElement('td');
+    this.emptyCell.className = 'col-md-6';
+  }
+  render(rowId, label) {
+    this.idCell.textContent = rowId;
+    this.labelLink.textContent = label;
+    insert(this, this.idCell, null);
+    insert(this, this.labelCell, null);
+    insert(this, this.closeCell, null);
+    insert(this, this.emptyCell, null);
   }
   select() {
     this.className = 'danger';
