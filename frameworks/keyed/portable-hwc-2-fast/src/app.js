@@ -42,7 +42,7 @@ class BenchApp extends HTMLElement {
     this._rows = this._tbody.children;
 
     const container = getButtonContainer(this);
-    const runButton = document.createElement('bench-button');
+    const runButton = new BenchButton();
     const runlotsButton = new BenchButton();
     const addButton = new BenchButton();
     const updateButton = new BenchButton();
