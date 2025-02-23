@@ -31,13 +31,10 @@ const APP = `<div class="container">
 class BenchApp extends HTMLElement {
   _id = 1;
   _selected = null;
-  _tmpl = null;
-  _size = 0;
 
   constructor() {
     super();
     this.innerHTML = APP;
-    this._table = this.querySelector('table');
     this._tbody = this.querySelector('tbody');
     this._rows = this._tbody.children;
 
